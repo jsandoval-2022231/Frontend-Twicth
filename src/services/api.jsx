@@ -1,9 +1,25 @@
 import axios from "axios";
+import { logout } from "../shared/hooks";
 
 const apiClient = axios.create({
     baseURL: 'http://127.0.0.1:3001/twitch/v1',
-    timeout: 1000
+    timeout: 5000
 })
+
+apiClient.interceptors.request.use(
+    (config) => {
+        const userDetails = localStorage.getItem('user')
+    
+        if(userDetails){
+            const token = JSON.parse(userDetails).token
+            config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+    },
+    (e) => {
+        return Promise.reject(e)
+    }
+)
 
 export const login = async (data) => {
     try{
@@ -11,7 +27,7 @@ export const login = async (data) => {
     }catch(e){
         return{
             error: true,
-            e
+            e 
         }
     }
 }
@@ -35,5 +51,25 @@ export const getChannels = async () => {
             error: true,
             e
         }
+    }
+}
+
+export const getFollowedChannels = async () => {
+    try{
+        return await apiClient.get('/channels/followed')
+    }catch(e){
+        checkResponseStatus(e)
+        return{
+            error: true,
+            e: e
+        }
+    }
+}
+
+const checkResponseStatus = (e) => {
+    const responseStatus = e?.response?.status
+
+    if(responseStatus){
+        (responseStatus === 401 || responseStatus === 403) && logout
     }
 }
