@@ -65,6 +65,17 @@ export const getChannelSettings = async () => {
     }
 }
 
+export const changePassword = async (data) => {
+    try{
+        return await apiClient.patch('/settings/password', data)
+    }catch(e){
+        return{
+            error: true,
+            e
+        }
+    }
+}
+
 export const updateChannelSettings = async (data) => {
     try{
         return await apiClient.put('/settings/channel', data)
